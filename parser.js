@@ -105,10 +105,14 @@ class SocialHandshake {
         this.tableBody = document.getElementById('tableBody');
         this.totalCount = document.getElementById('totalCount');
         this.processedCount = document.getElementById('processedCount');
+        this.searchSection = document.getElementById('searchSection');
+        this.searchInput = document.getElementById('searchInput');
+        this.searchCount = document.getElementById('searchCount');
     }
 
     attachEventListeners() {
         this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        this.searchInput.addEventListener('input', (e) => this.handleSearch(e));
     }
 
     handleFileSelect(event) {
@@ -118,6 +122,31 @@ class SocialHandshake {
         this.fileInfo.textContent = `Selected: ${file.name}`;
         this.processFile(file);
     }
+
+    handleSearch(event) {
+    const searchTerm = event.target.value;
+    const filtered = this.parser.filter(searchTerm);
+    
+    this.searchCount.textContent = `Showing ${filtered.length} of ${this.currentList.length} users`;
+    
+    // Clear and repopulate table with filtered results
+    this.tableBody.innerHTML = '';
+    filtered.forEach((user, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>@${user.username}</td>
+            <td>
+                <a href="#" 
+                   class="linkedin-btn" 
+                   onclick="searchLinkedIn('${user.username}'); return false;">
+                    Search on LinkedIn
+                </a>
+            </td>
+        `;
+        this.tableBody.appendChild(row);
+    });
+}
 
     processFile(file) {
         const reader = new FileReader();
@@ -151,6 +180,7 @@ class SocialHandshake {
     displayResults() {
         // Show results section
         this.results.classList.remove('hidden');
+        this.searchSection.classList.remove('hidden');
 
         // Update stats
         const count = this.currentList.length;
