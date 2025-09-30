@@ -1,89 +1,86 @@
 class InstagramParser {
     constructor() {
-        this.FollowingList = [];
-
+        this.followingList = [];
     }
 
     parse(data) {
-        this.FollowingList = [];
+        this.followingList = [];
     
         if (data.relationships_following) {
-            this.parseNewFormat(data);
+            this.parseNewFormat(data.relationships_following); 
         } else if (data.following) {
-            this.parseAlternativeFormat(data);
+            this.parseAlternativeFormat(data.following);
         } else if (Array.isArray(data)) {
-            thisparseDirectArrayFormat(data);
+            this.parseDirectArray(data);
         } else {
             throw new Error("Unrecognized data format");
         }
 
-        return this.FollowingList
-
+        return this.followingList;
     }
 
     parseNewFormat(relationships) {
         relationships.forEach(item => {
-            if(item.string_list_data&& item.string_list_data.length > 0) {
+            if(item.string_list_data && item.string_list_data.length > 0) {
                 const userData = item.string_list_data[0];
                 if (userData.value) {
-                    this.FollowingList.push({
+                    this.followingList.push({
                         username: userData.value,
-                        href : userData.href || null,
-                        timestamp : userData.timestamp || null
-
-
+                        href: userData.href || null,
+                        timestamp: userData.timestamp || null
                     });
                 }
             }
         });
     }
 
-
     parseAlternativeFormat(following) {
         following.forEach(item => {
             if (item.username || item.value) {
-                this.FollowingList.push({
-                    username : item.username || item.value,
-                    href : item.href || null,
-                    timestamp : item.timestamp || null
+                this.followingList.push({
+                    username: item.username || item.value,
+                    href: item.href || null,
+                    timestamp: item.timestamp || null
                 });
             }
         });
-
     }
-
 
     parseDirectArray(data) {
         data.forEach(item => {
             if (typeof item === 'string') {
-                this.FollowingList.push({
-                    username: item.username || null,
-                    href : item.href || null, 
-                    timestamp : item.timestamp || null
-
+                this.followingList.push({
+                    username: item, 
+                    href: null, 
+                    timestamp: null
+                });
+            } else if (item.username || item.value) {
+                this.followingList.push({
+                    username: item.username || item.value,
+                    href: item.href || null,
+                    timestamp: item.timestamp || null
                 });
             }
         });
     }
 
     getFollowingList() {
-        return this.FollowingList;
+        return this.followingList;
     }
 
-    get Count() {
-        return this.FollowingList.length;
+    getCount() { 
+        return this.followingList.length;
     }
 
     sortByUsername() {
-        this.FollowingList.sort((a,b) => 
-            a.username.localecompare(b.username)
+        this.followingList.sort((a, b) => 
+            a.username.localeCompare(b.username) 
         );
-        return this.FollowingList;
-    
+        return this.followingList;
     }
 
     filter(searchTerm) {
-        if (!searchTerm) return this.followingList;
+        if (!searchTerm) return this.followingList; 
         
         const term = searchTerm.toLowerCase();
         return this.followingList.filter(user => 
@@ -203,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.app = new SocialHandshake();
     console.log('Social Handshake initialized!');
 });
-
 
 // TESTING ONLY - Remove this later
 window.testWithMockData = function() {
