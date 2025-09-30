@@ -7,7 +7,7 @@ class InstagramParser {
         this.followingList = [];
     
         if (data.relationships_following) {
-            this.parseNewFormat(data.relationships_following); 
+            this.parseNewFormat(data.relationships_following);
         } else if (data.following) {
             this.parseAlternativeFormat(data.following);
         } else if (Array.isArray(data)) {
@@ -50,7 +50,7 @@ class InstagramParser {
         data.forEach(item => {
             if (typeof item === 'string') {
                 this.followingList.push({
-                    username: item, 
+                    username: item,
                     href: null, 
                     timestamp: null
                 });
@@ -68,19 +68,19 @@ class InstagramParser {
         return this.followingList;
     }
 
-    getCount() { 
+    getCount() {
         return this.followingList.length;
     }
 
     sortByUsername() {
         this.followingList.sort((a, b) => 
-            a.username.localeCompare(b.username) 
+            a.username.localeCompare(b.username)
         );
         return this.followingList;
     }
 
     filter(searchTerm) {
-        if (!searchTerm) return this.followingList; 
+        if (!searchTerm) return this.followingList;
         
         const term = searchTerm.toLowerCase();
         return this.followingList.filter(user => 
@@ -123,31 +123,6 @@ class SocialHandshake {
         this.processFile(file);
     }
 
-    handleSearch(event) {
-    const searchTerm = event.target.value;
-    const filtered = this.parser.filter(searchTerm);
-    
-    this.searchCount.textContent = `Showing ${filtered.length} of ${this.currentList.length} users`;
-    
-    // Clear and repopulate table with filtered results
-    this.tableBody.innerHTML = '';
-    filtered.forEach((user, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>@${user.username}</td>
-            <td>
-                <a href="#" 
-                   class="linkedin-btn" 
-                   onclick="searchLinkedIn('${user.username}'); return false;">
-                    Search on LinkedIn
-                </a>
-            </td>
-        `;
-        this.tableBody.appendChild(row);
-    });
-}
-
     processFile(file) {
         const reader = new FileReader();
         
@@ -177,21 +152,30 @@ class SocialHandshake {
         reader.readAsText(file);
     }
 
-    displayResults() {
-        // Show results section
-        this.results.classList.remove('hidden');
-        this.searchSection.classList.remove('hidden');
+    handleSearch(event) {
+        const searchTerm = event.target.value;
+        const filtered = this.parser.filter(searchTerm);
+        
+        // Update search count
+        if (searchTerm) {
+            this.searchCount.textContent = `Showing ${filtered.length} of ${this.currentList.length} users`;
+        } else {
+            this.searchCount.textContent = '';
+        }
+        
+        // Update processed count
+        this.processedCount.textContent = filtered.length;
+        
+        // Repopulate table with filtered results
+        this.populateTable(filtered);
+    }
 
-        // Update stats
-        const count = this.currentList.length;
-        this.totalCount.textContent = count;
-        this.processedCount.textContent = count;
-
+    populateTable(userList) {
         // Clear table
         this.tableBody.innerHTML = '';
 
         // Sort alphabetically
-        const sortedList = [...this.currentList].sort((a, b) => 
+        const sortedList = [...userList].sort((a, b) => 
             a.username.localeCompare(b.username)
         );
 
@@ -211,6 +195,24 @@ class SocialHandshake {
             `;
             this.tableBody.appendChild(row);
         });
+    }
+
+    displayResults() {
+        // Show results and search sections
+        this.results.classList.remove('hidden');
+        this.searchSection.classList.remove('hidden');
+
+        // Update stats
+        const count = this.currentList.length;
+        this.totalCount.textContent = count;
+        this.processedCount.textContent = count;
+
+        // Populate table with all users
+        this.populateTable(this.currentList);
+
+        // Clear search input
+        this.searchInput.value = '';
+        this.searchCount.textContent = '';
 
         // Smooth scroll to results
         setTimeout(() => {
@@ -237,7 +239,10 @@ window.testWithMockData = function() {
         relationships_following: [
             { string_list_data: [{ value: "johndoe", href: "https://instagram.com/johndoe" }] },
             { string_list_data: [{ value: "janedoe", href: "https://instagram.com/janedoe" }] },
-            { string_list_data: [{ value: "testuser", href: "https://instagram.com/testuser" }] }
+            { string_list_data: [{ value: "testuser", href: "https://instagram.com/testuser" }] },
+            { string_list_data: [{ value: "alice_wonder", href: "https://instagram.com/alice_wonder" }] },
+            { string_list_data: [{ value: "bob_builder", href: "https://instagram.com/bob_builder" }] },
+            { string_list_data: [{ value: "charlie_chaplin", href: "https://instagram.com/charlie_chaplin" }] }
         ]
     };
     
